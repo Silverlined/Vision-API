@@ -7,6 +7,14 @@ import com.google.cloud.vision.v1.Feature.Type;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.protobuf.ByteString;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,9 +23,15 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class VisionAPI {
+
+    private static String theFood;
+    private static String fileName;
+
+    public VisionAPI(String fileName) {
+        setFileName(fileName);
+    }
 
     public static void main(String... args) throws Exception {
         // Instantiates a client
@@ -25,7 +39,6 @@ public class VisionAPI {
         try (ImageAnnotatorClient vision = ImageAnnotatorClient.create()) {
 
             // The path to the image file to annotate
-            String fileName = "D:\\nexus 5\\pics\\pizza.jpg";
 
             // Reads the image file into memory
             Path path = Paths.get(fileName);
@@ -51,9 +64,38 @@ public class VisionAPI {
                     System.out.printf("Error: %s\n", res.getError().getMessage());
                     return;
                 }
-                String theFood = printResult(res);
+                 theFood = printResult(res);
                 System.out.println(theFood);
             }
+        }
+
+      //  connectToBot101();
+    }
+
+    private static void connectToBot101() {
+        CloseableHttpClient httpClient = HttpClientBuilder.create().build(); //Use this instead
+        try {
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("pizza", "paper");
+            HttpPost request = new HttpPost("https://cryptic-scrubland-97529.herokuapp.com/random");
+            StringEntity params = new StringEntity(jsonObject.toString());
+            request.addHeader("content-type", "application/json");
+            request.setEntity(params);
+            org.apache.http.HttpResponse result = httpClient.execute(request);
+            String json = EntityUtils.toString(result.getEntity(), "UTF-8");
+
+            com.google.gson.Gson gson = new com.google.gson.Gson();
+            Response response = gson.fromJson(json, Response.class);
+
+            System.out.println(response.getExample());
+            System.out.println(response.getFr());
+
+
+            //handle response here...
+        } catch (Exception ex) {
+
+            //handle exception here
+
         }
     }
 
@@ -72,11 +114,42 @@ public class VisionAPI {
         return options.poll();
     }
 
+    public static void setFileName(String fileName) {
+        VisionAPI.fileName = fileName;
+    }
+
+    public String getTheFood() {
+        return theFood;
+    }
+
+    public void setTheFood(String theFood) {
+        this.theFood = theFood;
+    }
+
     private static boolean isValid(Object v) {
         return !v.toString().equals("meal")
                 && !v.toString().equals("cuisine")
                 && !v.toString().equals("dish")
                 && !v.toString().equals("food");
+    }
+
+    public class Response{
+
+        private String example;
+        private String fr;
+
+        public String getExample() {
+            return example;
+        }
+        public void setExample(String example) {
+            this.example = example;
+        }
+        public String getFr() {
+            return fr;
+        }
+        public void setFr(String fr) {
+            this.fr = fr;
+        }
     }
 
 }
