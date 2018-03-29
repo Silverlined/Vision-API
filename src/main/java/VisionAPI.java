@@ -7,8 +7,10 @@ import com.google.cloud.vision.v1.Feature.Type;
 import com.google.cloud.vision.v1.Image;
 import com.google.cloud.vision.v1.ImageAnnotatorClient;
 import com.google.protobuf.ByteString;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.HttpClient;
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -16,6 +18,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -24,18 +27,30 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
-public class VisionAPI {
+public class VisionAPI extends Application{
 
     private static String theFood;
-    private static String fileName;
 
-    public VisionAPI(String fileName) {
-        setFileName(fileName);
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+
+        FXMLLoader fxmlLoader = new FXMLLoader();
+        fxmlLoader.setLocation(getClass().getResource("/RhinoVision.fxml"));
+        ModuleLayer.Controller controller = fxmlLoader.getController();
+        Scene scene = new Scene(fxmlLoader.load(), 400, 600);
+        primaryStage.setTitle("Vision");
+        primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
+        primaryStage.show();
+
     }
 
-    public static void main(String... args) throws Exception {
+    public static void main(String[] args) {
+        launch(args);
+    }
+
+    public static String runVisionAPI(String fileName) {
         // Instantiates a client
-        String GOOGLE_APPLICATION_CREDENTIALS = "D:\\Downloads\\Health-Vision-API-04782a937fae.json";
         try (ImageAnnotatorClient vision = ImageAnnotatorClient.create()) {
 
             // The path to the image file to annotate
@@ -62,14 +77,21 @@ public class VisionAPI {
             for (AnnotateImageResponse res : responses) {
                 if (res.hasError()) {
                     System.out.printf("Error: %s\n", res.getError().getMessage());
-                    return;
+                    return null;
                 }
-                 theFood = printResult(res);
-                System.out.println(theFood);
+                theFood = printResult(res);
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return theFood;
+        //  connectToBot101();
+    }
 
-      //  connectToBot101();
+    public String getTheFood() {
+        return theFood;
     }
 
     private static void connectToBot101() {
@@ -114,18 +136,6 @@ public class VisionAPI {
         return options.poll();
     }
 
-    public static void setFileName(String fileName) {
-        VisionAPI.fileName = fileName;
-    }
-
-    public String getTheFood() {
-        return theFood;
-    }
-
-    public void setTheFood(String theFood) {
-        this.theFood = theFood;
-    }
-
     private static boolean isValid(Object v) {
         return !v.toString().equals("meal")
                 && !v.toString().equals("cuisine")
@@ -133,7 +143,7 @@ public class VisionAPI {
                 && !v.toString().equals("food");
     }
 
-    public class Response{
+    public class Response {
 
         private String example;
         private String fr;
@@ -141,12 +151,15 @@ public class VisionAPI {
         public String getExample() {
             return example;
         }
+
         public void setExample(String example) {
             this.example = example;
         }
+
         public String getFr() {
             return fr;
         }
+
         public void setFr(String fr) {
             this.fr = fr;
         }

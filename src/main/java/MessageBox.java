@@ -10,16 +10,12 @@ public class MessageBox {
     public static void display(String title) {
         Stage primaryStage = new Stage();
         primaryStage.initModality(Modality.APPLICATION_MODAL);
-        if (title.equals("salad")) {
-            primaryStage.setTitle("Caesar Salad");
-        } else {
-            primaryStage.setTitle(title);
-        }
+        primaryStage.setTitle(title.toUpperCase());
         primaryStage.setMinWidth(200);
         primaryStage.setMinHeight(40);
 
         Label label;
-        if (title.equals("Salad")) {
+        if (title.equals("salad")) {
             label = new Label("Awesome, Keep going!");
         } else {
             label = new Label("...");

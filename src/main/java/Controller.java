@@ -1,3 +1,4 @@
+import io.netty.handler.codec.MessageAggregationException;
 import javafx.event.ActionEvent;
 import javafx.scene.control.Button;
 import javafx.scene.image.Image;
@@ -12,6 +13,7 @@ public class Controller {
 
     public Button shootButton;
     public ImageView imageView;
+    public ImageView snapchatLogo;
 
     public void takeAPicture(ActionEvent actionEvent) throws Exception {
         FileChooser fileChooser = new FileChooser();
@@ -19,11 +21,9 @@ public class Controller {
         File imageFile = fileChooser.showOpenDialog(new Stage());
         FileInputStream inputStream = new FileInputStream(imageFile);
         shootButton.setOpacity(0);
+        snapchatLogo.setOpacity(0);
         imageView.setImage(new Image(inputStream));
-        Thread.sleep(1000);
-        RecognitionAPI Rhino = new RecognitionAPI(imageFile);
-        new Thread(Rhino).start();
-        MessageBox.display("Salad");
+        MessageBox.display(VisionAPI.runVisionAPI(imageFile.getAbsolutePath()));
     }
 
     private void configureFileChooser(FileChooser fileChooser) {
